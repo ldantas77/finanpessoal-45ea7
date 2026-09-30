@@ -196,14 +196,15 @@
     import { getFirestore, collection, addDoc, query, where, onSnapshot, deleteDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
     // SUBSTITA AS CHAVES ABAIXO PELAS CHAVES DO SEU PROJETO NO FIREBASE CONSOLE
-    const firebaseConfig = {
-      apiKey: "SUA_API_KEY",
-      authDomain: "SEU_PROJETO.firebaseapp.com",
-      projectId: "SEU_PROJETO",
-      storageBucket: "SEU_PROJETO.appspot.com",
-      messagingSenderId: "123456789",
-      appId: "1:123456789:web:abcdef"
-    };
+const firebaseConfig = {
+  apiKey : "AIzaSyC1NbxqKhvDuy_38_UBiVneiHfzgQXfTQI" , 
+  authDomain: "finanpessoal-45ea7.firebaseapp.com",
+  projectId: "finanpessoal-45ea7",
+  storageBucket: "finanpessoal-45ea7.firebasestorage.app",
+  messagingSenderId: "986268697843",
+  appId : "1:986268697843:web:1917693a3b707bd3786386" , 
+  measurementId: "G-ME1BYCBPGH"
+};
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
