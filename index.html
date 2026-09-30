@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Gestão Financeira</title>
+
+  <!-- Apple Web App Metas -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Financeiro" />
+  <link rel="apple-touch-icon" href="https://upload.wikimedia.org/wikipedia/commons/thumb/1/1b/Apple_logo_grey.svg/500px-Apple_logo_grey.svg.png" />
+
+  <!-- Tailwind CSS via CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+    .dark .glass {
+      background: rgba(28, 28, 30, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+  </style>
+</head>
+<body class="bg-gray-100 dark:bg-black text-gray-900 dark:text-gray-100 min-h-screen pb-20">
+
+  <!-- ==================== TELA DE LOGIN ==================== -->
+  <div id="login-screen" class="fixed inset-0 z-50 flex items-center justify-center p-6 bg-gray-100 dark:bg-black">
+    <div class="w-full max-w-sm glass p-8 rounded-3xl shadow-2xl border border-white/20 dark:border-gray-800/50 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-lg shadow-blue-500/30">
+        <i data-lucide="wallet" class="w-8 h-8"></i>
+      </div>
+      <h1 class="text-2xl font-bold tracking-tight mb-1">Finanças Pessoais</h1>
+      <p class="text-xs text-gray-500 dark:text-gray-400 mb-6">Acesso restrito ao administrador</p>
+
+      <form id="login-form" class="space-y-4 text-left">
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 ml-1">E-mail</label>
+          <input type="email" id="login-email" required placeholder="seu@email.com" class="w-full px-4 py-3 rounded-xl bg-gray-200/60 dark:bg-gray-800/60 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition text-sm" />
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1 ml-1">Senha</label>
+          <input type="password" id="login-password" required placeholder="••••••••" class="w-full px-4 py-3 rounded-xl bg-gray-200/60 dark:bg-gray-800/60 border border-transparent focus:border-blue-500 focus:bg-white dark:focus:bg-gray-800 outline-none transition text-sm" />
+        </div>
+        <p id="login-error" class="text-xs text-red-500 hidden text-center font-medium"></p>
+        <button type="submit" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold rounded-xl shadow-lg shadow-blue-600/30 transition text-sm">
+          Entrar
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== TELA PRINCIPAL DO APP ==================== -->
+  <div id="app-screen" class="hidden max-w-lg mx-auto min-h-screen flex flex-col">
+    <!-- Header Fixo -->
+    <header class="sticky top-0 z-30 glass border-b border-gray-200/50 dark:border-gray-800/50 px-5 py-4 flex items-center justify-between">
+      <div>
+        <h2 class="text-xs text-gray-500 dark:text-gray-400 font-medium">Controle Financeiro</h2>
+        <h1 class="text-xl font-bold tracking-tight">Visão Geral</h1>
+      </div>
+      <button id="logout-btn" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 text-gray-500 transition">
+        <i data-lucide="log-out" class="w-5 h-5"></i>
+      </button>
+    </header>
+
+    <!-- Resumo de Saldos -->
+    <main class="p-5 space-y-5 flex-1">
+      <div class="p-6 rounded-3xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white shadow-xl shadow-blue-600/20">
+        <span class="text-xs opacity-80 uppercase tracking-wider font-semibold">Saldo Atual</span>
+        <div id="net-balance" class="text-3xl font-bold tracking-tight mt-1">R$ 0,00</div>
+
+        <div class="grid grid-cols-2 gap-4 mt-6 pt-4 border-t border-white/10">
+          <div>
+            <div class="flex items-center gap-1.5 text-xs opacity-80">
+              <i data-lucide="arrow-down-left" class="w-4 h-4 text-emerald-300"></i>
+              <span>Entradas</span>
+            </div>
+            <div id="total-income" class="text-lg font-semibold mt-0.5 text-emerald-200">R$ 0,00</div>
+          </div>
+          <div>
+            <div class="flex items-center gap-1.5 text-xs opacity-80">
+              <i data-lucide="arrow-up-right" class="w-4 h-4 text-rose-300"></i>
+              <span>Saídas</span>
+            </div>
+            <div id="total-expense" class="text-lg font-semibold mt-0.5 text-rose-200">R$ 0,00</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Filtros e Busca -->
+      <div class="flex items-center gap-2">
+        <div class="relative flex-1">
+          <i data-lucide="search" class="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400"></i>
+          <input type="text" id="search-input" placeholder="Buscar descrição..." class="w-full pl-10 pr-4 py-2.5 rounded-2xl bg-gray-200/70 dark:bg-gray-800/70 border-none text-sm outline-none focus:ring-2 focus:ring-blue-500" />
+        </div>
+        <select id="type-filter" class="px-3 py-2.5 rounded-2xl bg-gray-200/70 dark:bg-gray-800/70 text-sm font-medium border-none outline-none">
+          <option value="all">Todos</option>
+          <option value="income">Entradas</option>
+          <option value="expense">Saídas</option>
+        </select>
+      </div>
+
+      <!-- Lista de Lançamentos -->
+      <section>
+        <h3 class="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-3 ml-1">Lançamentos</h3>
+        <div id="transaction-list" class="space-y-2.5">
+          <p class="text-center text-xs text-gray-400 py-8">Carregando dados...</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Botão Flutuante (Novo Lançamento) -->
+    <button id="open-modal-btn" class="fixed bottom-6 right-6 z-40 w-14 h-14 bg-blue-600 hover:bg-blue-700 active:scale-95 text-white rounded-full flex items-center justify-center shadow-xl shadow-blue-600/40 transition">
+      <i data-lucide="plus" class="w-7 h-7"></i>
+    </button>
+  </div>
+
+  <!-- ==================== MODAL DE CADASTRO ==================== -->
+  <div id="modal" class="fixed inset-0 z-50 hidden bg-black/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div class="w-full max-w-lg bg-white dark:bg-gray-900 rounded-t-3xl sm:rounded-3xl p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-gray-200 dark:border-gray-800 pb-3">
+        <h3 class="text-lg font-bold">Novo Lançamento</h3>
+        <button id="close-modal-btn" class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+          <i data-lucide="x" class="w-6 h-6"></i>
+        </button>
+      </div>
+
+      <form id="transaction-form" class="space-y-4">
+        <div class="grid grid-cols-2 gap-3">
+          <label class="flex items-center justify-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800 cursor-pointer has-[:checked]:bg-emerald-500/10 has-[:checked]:border-emerald-500 has-[:checked]:text-emerald-500 font-medium text-sm">
+            <input type="radio" name="type" value="income" checked class="hidden" />
+            <i data-lucide="arrow-down-left" class="w-4 h-4"></i> Entrada
+          </label>
+          <label class="flex items-center justify-center gap-2 p-3 rounded-xl border border-gray-200 dark:border-gray-800 cursor-pointer has-[:checked]:bg-rose-500/10 has-[:checked]:border-rose-500 has-[:checked]:text-rose-500 font-medium text-sm">
+            <input type="radio" name="type" value="expense" class="hidden" />
+            <i data-lucide="arrow-up-right" class="w-4 h-4"></i> Saída
+          </label>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Descrição</label>
+          <input type="text" id="desc-input" required placeholder="Ex: Corrida Uber, Almoço..." class="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 outline-none text-sm" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Valor (R$)</label>
+            <input type="number" step="0.01" id="amount-input" required placeholder="0,00" class="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 outline-none text-sm font-semibold" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Categoria</label>
+            <select id="category-input" class="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 outline-none text-sm font-medium">
+              <option value="Salário">Salário</option>
+              <option value="Adiantamento">Adiantamento</option>
+              <option value="Férias">Férias</option>
+              <option value="13º Salário">13º Salário</option>
+              <option value="Uber">Uber</option>
+              <option value="Gasolina">Gasolina</option>
+              <option value="Almoço">Almoço</option>
+              <option value="Janta">Janta</option>
+              <option value="Mercado">Mercado</option>
+              <option value="Contas Fixas">Contas Fixas</option>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1">Data</label>
+          <input type="date" id="date-input" required class="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 outline-none text-sm" />
+        </div>
+
+        <button type="submit" class="w-full py-3.5 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold rounded-xl shadow-lg shadow-blue-600/30 transition text-sm">
+          Salvar Lançamento
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ==================== FIREBASE SDK ==================== -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getFirestore, collection, addDoc, query, where, onSnapshot, deleteDoc, doc, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+    // SUBSTITA AS CHAVES ABAIXO PELAS CHAVES DO SEU PROJETO NO FIREBASE CONSOLE
+    const firebaseConfig = {
+      apiKey: "SUA_API_KEY",
+      authDomain: "SEU_PROJETO.firebaseapp.com",
+      projectId: "SEU_PROJETO",
+      storageBucket: "SEU_PROJETO.appspot.com",
+      messagingSenderId: "123456789",
+      appId: "1:123456789:web:abcdef"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    let transactions = [];
+    let currentUser = null;
+
+    // Inicializa Ícones
+    lucide.createIcons();
+
+    // Data padrão para o formulário
+    document.getElementById('date-input').valueAsDate = new Date();
+
+    // Modais e Visibilidade
+    const loginScreen = document.getElementById('login-screen');
+    const appScreen = document.getElementById('app-screen');
+    const modal = document.getElementById('modal');
+
+    document.getElementById('open-modal-btn').onclick = () => modal.classList.remove('hidden');
+    document.getElementById('close-modal-btn').onclick = () => modal.classList.add('hidden');
+
+    // Login
+    document.getElementById('login-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const pass = document.getElementById('login-password').value;
+      const err = document.getElementById('login-error');
+      err.classList.add('hidden');
+
+      try {
+        await signInWithEmailAndPassword(auth, email, pass);
+      } catch (error) {
+        err.innerText = "E-mail ou senha incorretos.";
+        err.classList.remove('hidden');
+      }
+    };
+
+    // Logout
+    document.getElementById('logout-btn').onclick = () => signOut(auth);
+
+    // Monitor do estado da autenticação
+    onAuthStateChanged(auth, (user) => {
+      currentUser = user;
+      if (user) {
+        loginScreen.classList.add('hidden');
+        appScreen.classList.remove('hidden');
+        listenToTransactions();
+      } else {
+        loginScreen.classList.remove('hidden');
+        appScreen.classList.add('hidden');
+      }
+    });
+
+    // Escuta lançamentos do Firestore
+    function listenToTransactions() {
+      const q = query(
+        collection(db, "transactions"),
+        where("userId", "==", currentUser.uid),
+        orderBy("date", "desc")
+      );
+
+      onSnapshot(q, (snapshot) => {
+        transactions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderApp();
+      });
+    }
+
+    // Salvar Novo Lançamento
+    document.getElementById('transaction-form').onsubmit = async (e) => {
+      e.preventDefault();
+      const type = document.querySelector('input[name="type"]:checked').value;
+      const description = document.getElementById('desc-input').value;
+      const amount = parseFloat(document.getElementById('amount-input').value);
+      const category = document.getElementById('category-input').value;
+      const date = document.getElementById('date-input').value;
+
+      try {
+        await addDoc(collection(db, "transactions"), {
+          userId: currentUser.uid,
+          type,
+          description,
+          amount,
+          category,
+          date,
+          createdAt: new Date().toISOString()
+        });
+        document.getElementById('transaction-form').reset();
+        document.getElementById('date-input').valueAsDate = new Date();
+        modal.classList.add('hidden');
+      } catch (err) {
+        alert("Erro ao salvar: " + err.message);
+      }
+    };
+
+    // Deletar Lançamento
+    window.deleteItem = async (id) => {
+      if (confirm("Deseja apagar este lançamento?")) {
+        await deleteDoc(doc(db, "transactions", id));
+      }
+    };
+
+    // Renderizar dados e resumos na tela
+    function renderApp() {
+      const search = document.getElementById('search-input').value.toLowerCase();
+      const filterType = document.getElementById('type-filter').value;
+
+      const filtered = transactions.filter(t => {
+        const matchesSearch = t.description.toLowerCase().includes(search) || t.category.toLowerCase().includes(search);
+        const matchesType = filterType === 'all' || t.type === filterType;
+        return matchesSearch && matchesType;
+      });
+
+      // Cálculo dos Saldos
+      let income = 0, expense = 0;
+      transactions.forEach(t => {
+        if (t.type === 'income') income += t.amount;
+        else expense += t.amount;
+      });
+
+      document.getElementById('total-income').innerText = formatBRL(income);
+      document.getElementById('total-expense').innerText = formatBRL(expense);
+      document.getElementById('net-balance').innerText = formatBRL(income - expense);
+
+      // Render da Lista
+      const list = document.getElementById('transaction-list');
+      if (filtered.length === 0) {
+        list.innerHTML = `<p class="text-center text-xs text-gray-400 py-8">Nenhum lançamento encontrado.</p>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map(t => `
+        <div class="p-4 rounded-2xl glass border border-gray-200/50 dark:border-gray-800/50 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl flex items-center justify-center ${t.type === 'income' ? 'bg-emerald-500/10 text-emerald-500' : 'bg-rose-500/10 text-rose-500'}">
+              <i data-lucide="${t.type === 'income' ? 'arrow-down-left' : 'arrow-up-right'}" class="w-5 h-5"></i>
+            </div>
+            <div>
+              <div class="font-semibold text-sm">${t.description}</div>
+              <div class="text-xs text-gray-400 flex items-center gap-2">
+                <span>${t.category}</span> • <span>${formatDate(t.date)}</span>
+              </div>
+            </div>
+          </div>
+          <div class="flex items-center gap-3">
+            <span class="font-bold text-sm ${t.type === 'income' ? 'text-emerald-500' : 'text-rose-500'}">
+              ${t.type === 'income' ? '+' : '-'} ${formatBRL(t.amount)}
+            </span>
+            <button onclick="deleteItem('${t.id}')" class="text-gray-400 hover:text-rose-500">
+              <i data-lucide="trash-2" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      lucide.createIcons();
+    }
+
+    document.getElementById('search-input').oninput = renderApp;
+    document.getElementById('type-filter').onchange = renderApp;
+
+    function formatBRL(value) {
+      return value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+    }
+
+    function formatDate(dateStr) {
+      const [year, month, day] = dateStr.split('-');
+      return `${day}/${month}/${year}`;
+    }
+  </script>
+</body>
+</html>
